@@ -19,7 +19,7 @@ const getFileJSON = (filePath) => {
   }
 }
 
-const app = async (filePath) => {
+const app = (filePath, { hideFixAvailable = false } = {}) => {
   let content
   try {
     content = getFileJSON(filePath)
@@ -35,13 +35,11 @@ const app = async (filePath) => {
 
   result = {
     ...content,
-    vulnerabilities: getHighestPriorities(content.vulnerabilities)
+    vulnerabilities: getHighestPriorities(content.vulnerabilities, { hideFixAvailable })
   }
 
   fs.writeFileSync('output.json', JSON.stringify(result, null, 2))
   console.log('Output written to output.json')
 }
-
-
 
 module.exports = app

@@ -3,7 +3,8 @@ const path = require('path')
 
 const app = require('../app')
 
-const expectedOutput = require('./fixtures/expectedOutput.json')
+const expectedOutputWithFixAvailable = require('./fixtures/expectedOutput.json')
+const expectedOutputWithoutFixAvailable = require('./fixtures/expectedOutputWithoutFixAvailable.json')
 
 const sandbox = sinon.createSandbox()
 
@@ -54,20 +55,40 @@ describe('run', () => {
     })
 
     context('when the file is valid', () => {
-      beforeEach(() => {
-        app(path.join(__dirname, 'fixtures/inputFile.json'))
+      context('when hideFixAvailable is false', () => {
+        beforeEach(() => {
+          app(path.join(__dirname, 'fixtures/inputFile1.json'))
+        })
+
+        it('parses the file and writes the output to output.json', () => {
+          expect(fs.writeFileSync).to.have.been.calledWith('output.json')
+        })
+
+        it('sends the correct information to the file', () => {
+          expect(JSON.parse(fs.writeFileSync.getCall(0).args[1])).to.deep.equal(expectedOutputWithFixAvailable)
+        })
+
+        it('write a message to the user explaining where the file is', () => {
+          expect(console.log).to.have.been.calledWith('Output written to output.json')
+        })
       })
 
-      it('parses the file and writes the output to output.json', () => {
-        expect(fs.writeFileSync).to.have.been.calledWith('output.json')
-      })
+      context('when hideFixAvailable is true', () => {
+        beforeEach(() => {
+          app(path.join(__dirname, 'fixtures/inputFile2.json'), { hideFixAvailable: true })
+        })
 
-      it('sends the correct information to the file', () => {
-        expect(JSON.parse(fs.writeFileSync.getCall(0).args[1])).to.deep.equal(expectedOutput)
-      })
+        it('parses the file and writes the output to output.json', () => {
+          expect(fs.writeFileSync).to.have.been.calledWith('output.json')
+        })
 
-      it('write a message to the user explaining where the file is', () => {
-        expect(console.log).to.have.been.calledWith('Output written to output.json')
+        it('sends the correct information to the file', () => {
+          expect(JSON.parse(fs.writeFileSync.getCall(0).args[1])).to.deep.equal(expectedOutputWithoutFixAvailable)
+        })
+
+        it('write a message to the user explaining where the file is', () => {
+          expect(console.log).to.have.been.calledWith('Output written to output.json')
+        })
       })
     })
   })
